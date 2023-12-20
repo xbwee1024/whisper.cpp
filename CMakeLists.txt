@@ -79,6 +79,9 @@ endif()
 
 option(WHISPER_PERF "whisper: enable perf timings" OFF)
 option(WHISPER_LOGCAT "whisper: enable android logcat" OFF)
+option(WHISPER_BUID_BINDINGS "whisper: enable build bindings" ON)
+option(RUN_SWIG "whisper: reconfig bindings generator" ON)
+option(JAVA_BINDINGS "whisper: reconfig bindings generator" ON)
 
 # sanitizers
 
@@ -546,11 +549,18 @@ set_target_properties(${TARGET} PROPERTIES PUBLIC_HEADER "ggml.h;whisper.h")
 
 include(GNUInstallDirs)
 
+if (ANDROID)
+    set(LIBDIR lib/${ANDROID_ABI})
+    set(BINDIR bin/${ANDROID_ABI})
+else ()
+    set(LIBDIR lib)
+    set(BINDIR bin)
+endif ()
 install(TARGETS ${TARGET}
-    LIBRARY  DESTINATION lib
-    ARCHIVE  DESTINATION lib/static
-    RUNTIME  DESTINATION bin
-    RESOURCE DESTINATION bin
+    LIBRARY  DESTINATION ${LIBDIR}
+    ARCHIVE  DESTINATION ${LIBDIR}/static
+    RUNTIME  DESTINATION ${BINDIR}
+    RESOURCE DESTINATION ${BINDIR}
     PUBLIC_HEADER DESTINATION include
     )
 
@@ -571,4 +581,8 @@ endif ()
 
 if (WHISPER_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if (WHISPER_BUID_BINDINGS)
+    add_subdirectory(swig)
 endif()
