@@ -78,6 +78,7 @@ else()
 endif()
 
 option(WHISPER_PERF "whisper: enable perf timings" OFF)
+option(WHISPER_BUID_BINDINGS "whisper: enable build bindings" OFF)
 
 # sanitizers
 
@@ -414,6 +415,10 @@ if (WHISPER_PERF)
     set(WHISPER_EXTRA_FLAGS ${WHISPER_EXTRA_FLAGS} -DGGML_PERF)
 endif()
 
+if (WHISPER_LOGCAT AND ANDROID)
+    set(WHISPER_EXTRA_FLAGS ${WHISPER_EXTRA_FLAGS} -DWHISPER_LOGCAT)
+endif()
+
 #
 # whisper.coreml - Core ML support
 #
@@ -503,6 +508,10 @@ else()
     target_link_libraries(${TARGET} PRIVATE m ${WHISPER_EXTRA_LIBS} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
+if (WHISPER_LOGCAT)
+    target_link_libraries(${TARGET} PRIVATE android log)
+endif ()
+
 if (BUILD_SHARED_LIBS)
     target_link_libraries(${TARGET} PUBLIC
         ${CMAKE_DL_LIBS}
@@ -549,11 +558,18 @@ set_target_properties(${TARGET} PROPERTIES PUBLIC_HEADER "ggml.h;whisper.h")
 
 include(GNUInstallDirs)
 
+if (ANDROID)
+    set(LIBDIR lib/${ANDROID_ABI})
+    set(BINDIR bin/${ANDROID_ABI})
+else ()
+    set(LIBDIR lib)
+    set(BINDIR bin)
+endif ()
 install(TARGETS ${TARGET}
-    LIBRARY  DESTINATION lib
-    ARCHIVE  DESTINATION lib/static
-    RUNTIME  DESTINATION bin
-    RESOURCE DESTINATION bin
+    LIBRARY  DESTINATION ${LIBDIR}
+    ARCHIVE  DESTINATION ${LIBDIR}/static
+    RUNTIME  DESTINATION ${BINDIR}
+    RESOURCE DESTINATION ${BINDIR}
     PUBLIC_HEADER DESTINATION include
     )
 
@@ -574,4 +590,8 @@ endif ()
 
 if (WHISPER_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if (WHISPER_BUID_BINDINGS)
+    add_subdirectory(swig)
 endif()

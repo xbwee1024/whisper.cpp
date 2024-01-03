@@ -118,6 +118,9 @@ static void byteswap_tensor(ggml_tensor * tensor) {
 // logging
 //
 
+#ifdef WHISPER_LOGCAT
+#include <android/log.h>
+#endif
 WHISPER_ATTRIBUTE_FORMAT(2, 3)
 static void whisper_log_internal        (ggml_log_level level, const char * format, ...);
 static void whisper_log_callback_default(ggml_log_level level, const char * text, void * user_data);
