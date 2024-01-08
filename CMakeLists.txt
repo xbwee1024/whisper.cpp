@@ -592,6 +592,6 @@ if (WHISPER_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-if (WHISPER_BUID_BINDINGS)
+if (WHISPER_BUILD_BINDINGS)
     add_subdirectory(swig)
 endif()

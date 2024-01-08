@@ -11,7 +11,7 @@ void android_log(enum ggml_log_level level, const char * text, void * user_data)
         case GGML_LOG_LEVEL_WARN: android_level = ANDROID_LOG_WARN; break;
         case GGML_LOG_LEVEL_ERROR: android_level = ANDROID_LOG_ERROR; break;
     }
-    __android_log_print(android_level, "Whisper", "%s", text);
+    __android_log_print(android_level, "whisper", "%s", text);
 }
 #endif
 %}

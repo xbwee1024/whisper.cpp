@@ -33,27 +33,24 @@ endif()
 ###################
 # Java Bindings
 ###################
-if (NOT EXISTS ${CMAKE_SOURCE_DIR}/swig/java/whisper-java.cpp)
-    find_package(JNI)
-    if (NOT JNI_INCLUDE_DIRS)
-        message(STATUS "Java Native Interface NOT found. Java bindings will NOT be compiled.")
-    endif ()
-
-    find_package(Java)
-    if (NOT JAVA_COMPILE)
-        message(STATUS "Java compiler NOT found. Java bindings will NOT be generated.")
-        set(JAVAC_FAIL ON BOOL)
-    endif ()
-
-    if (JNI_INCLUDE_DIRS AND NOT JAVAC_FAIL)
-        set(DO_JAVA_BINDINGS ON BOOL)
-        message(STATUS "JAVA_COMPILE: ${JAVA_COMPILE}")
-        message(STATUS "JNI_INCLUDE_DIRS: ${JNI_INCLUDE_DIRS}")
-        message(STATUS "Java bindings will be compiled")
-    endif ()
-else ()
-    message(STATUS "Warning: Java bindings NOT found. Generate using -DRUN_SWIG=ON.")
+find_package(JNI)
+if (NOT JNI_INCLUDE_DIRS)
+    message(STATUS "Java Native Interface NOT found. Java bindings will NOT be compiled.")
 endif ()
+
+find_package(Java)
+if (NOT JAVA_COMPILE)
+    message(STATUS "Java compiler NOT found. Java bindings will NOT be generated.")
+    set(JAVAC_FAIL ON BOOL)
+endif ()
+
+if (JNI_INCLUDE_DIRS AND NOT JAVAC_FAIL)
+    set(DO_JAVA_BINDINGS ON BOOL)
+    message(STATUS "JAVA_COMPILE: ${JAVA_COMPILE}")
+    message(STATUS "JNI_INCLUDE_DIRS: ${JNI_INCLUDE_DIRS}")
+    message(STATUS "Java bindings will be compiled")
+endif ()
+
 
 if (DO_JAVA_BINDINGS)
 
@@ -63,11 +60,13 @@ if (DO_JAVA_BINDINGS)
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/swig/java/io/github/xbwee/whisper
             COMMAND ${SWIG_EXECUTABLE} -java -package io.github.xbwee.whisper -c++ ${doxygen_switch} -small -O -templatereduce -naturalvar -I${CMAKE_SOURCE_DIR} -o ${CMAKE_BINARY_DIR}/swig/java/whisper-java.cpp -outdir ${CMAKE_BINARY_DIR}/swig/java/io/github/xbwee/whisper ${CMAKE_SOURCE_DIR}/swig/whisper.i
             COMMAND ${JAVA_COMPILE} ARGS ${CMAKE_BINARY_DIR}/swig/java/io/github/xbwee/whisper/*.java
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/swig/java ${CMAKE_SOURCE_DIR}/swig/java
+            COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/swig/java/io/github/xbwee/whisper/*.java
             COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_BINARY_DIR}/swig/java ${JAVA_ARCHIVE} cf libwhisper.jar io
-            COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/swig/java/io/github/xbwee/whisper/*.class
-            # COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/swig/java/libwhisper.jar ${CMAKE_SOURCE_DIR}/swig/java
-            # COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/swig/java ${CMAKE_SOURCE_DIR}/swig/java
-            # COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/swig/java
+            COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_SOURCE_DIR}/swig/java/io/github/xbwee/whisper/*.class
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/swig/java ${JAVA_ARCHIVE} cf libwhisper_src.jar io
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/swig/java/libwhisper_src.jar ${CMAKE_BINARY_DIR}/swig/java/libwhisper_src.jar
+            COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_SOURCE_DIR}/swig/java
                 MAIN_DEPENDENCY whisper.i
             )
 
@@ -92,6 +91,9 @@ if (DO_JAVA_BINDINGS)
             LIBRARY DESTINATION "${JAVA_INSTDIR}"
             COMPONENT bindings_java)
     install(FILES ${CMAKE_BINARY_DIR}/swig/java/libwhisper.jar
+            DESTINATION lib
+            COMPONENT bindings_java)
+    install(FILES ${CMAKE_BINARY_DIR}/swig/java/libwhisper_src.jar
             DESTINATION lib
             COMPONENT bindings_java)
 endif ()
